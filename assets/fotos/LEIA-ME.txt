@@ -1,0 +1,6 @@
+Coloque aqui as fotos dos capítulos do livro:
+cap1-esq.jpg, cap1-dir.jpg, cap2-esq.jpg, cap2-dir.jpg,
+cap3-esq.jpg, cap3-dir.jpg, cap4-esq.jpg, cap4-dir.jpg
+
+As legendas ficam no index.html, no bloco FOTOS.
+Formato ideal: 1200 x 900 px (4:3), JPG.

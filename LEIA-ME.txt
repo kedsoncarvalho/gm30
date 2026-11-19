@@ -1,0 +1,32 @@
+ESCOLA GENTE MIÚDA · 30 ANOS · página interativa
+
+COMO PUBLICAR NO SEU DOMÍNIO
+1. Envie o conteúdo desta pasta (index.html + pasta assets) para a raiz
+   do site ou para uma subpasta (ex.: seudominio.com.br/30anos/).
+2. Não é preciso banco de dados nem servidor especial: é uma página estática.
+3. Para abrir já em "modo evento": seudominio.com.br/30anos/#evento
+
+COMO APRESENTAR
+- Abra no Chrome e aperte F para tela cheia.
+- Seta para baixo, PageDown, espaço ou o clicker: avança para a próxima parada.
+- Seta para cima ou PageUp: volta.
+- Um gesto na roda do mouse ou no trackpad avança (ou volta) um passo.
+- E: liga/desliga o modo evento (esconde códigos de cor e detalhes técnicos).
+- H: esconde as legendas de navegação.
+
+O QUE É PROVISÓRIO
+- Textos dos capítulos e do manifesto.
+- Ano de fundação (1997, calculado a partir dos 30 anos em 2027).
+- Capítulo 04: as molduras estão aguardando as fotos do acervo da escola.
+- Significados das cores.
+
+LIVRO ANIMADO
+O livro é uma sequência de 357 imagens (pasta assets/livro). Para trocar a animação,
+basta substituir os arquivos mantendo os mesmos nomes.
+
+FONTE
+A página usa a Neulis Alt (pasta assets/fonts), embutida. Funciona offline.
+
+FOTOS DOS CAPÍTULOS DO LIVRO
+Coloque as fotos em assets/fotos com os nomes cap1-esq.jpg, cap1-dir.jpg ... cap4-dir.jpg.
+As legendas ficam no index.html, no bloco FOTOS.
