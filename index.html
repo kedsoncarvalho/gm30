@@ -629,26 +629,30 @@ function aplicaCap(i){
   capIdx.querySelector('b').textContent='0'+Math.min(4,Math.max(1,i));
 }
 // ---- livro: sequência de imagens (quadro exato, ida e volta suaves) ----
-const N_QUADROS=357, FPS=24, PASTA='assets/livro/', EXT='.avif';
+const N_QUADROS=357, FPS=24, EXT='.avif';
+/* celular/tablet: quadros menores e um a cada dois (cabe na memória do Safari/iPhone) */
+const LEVE=matchMedia('(pointer: coarse)').matches || Math.min(screen.width,screen.height)<820 || /iPhone|iPad|Android/i.test(navigator.userAgent);
+const PASTA=LEVE?'assets/livro-m/':'assets/livro/', PASSO=LEVE?2:1;
+const N_CARREGAR=Math.ceil(N_QUADROS/PASSO);
 const cv=$('#livroCanvas'), ctx=cv.getContext('2d');
 const quadros=new Array(N_QUADROS), pronto=new Uint8Array(N_QUADROS); let nProntos=0;
 const nome=i=>PASTA+'f'+String(i).padStart(3,'0')+EXT;
-function carrega(i){ return new Promise(res=>{ if(quadros[i]) return res(); const im=new Image(); im.decoding='async';
-  im.onload=()=>{ (im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>{pronto[i]=1;nProntos++;needDraw=true;res()}) };
+function carrega(i){ i-=i%PASSO; return new Promise(res=>{ if(quadros[i]) return res(); const im=new Image(); im.decoding='async';
+  im.onload=()=>{ (im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(()=>{pronto[i]=1;nProntos++;needDraw=true; if(nProntos>=N_CARREGAR){const ht=$('#capaHintTxt'); if(ht) ht.textContent='Role para abrir o livro';} res()}) };
   im.onerror=()=>res(); im.src=nome(i); quadros[i]=im; }); }
 // ordem: quadros das âncoras primeiro, depois todos em sequência
 const ancoras=[0,119,238,356];
 (async()=>{
   for(const i of ancoras) await carrega(i);
-  const fila=[]; for(let i=0;i<N_QUADROS;i++) if(!ancoras.includes(i)) fila.push(i);
+  const fila=[]; for(let i=0;i<N_QUADROS;i+=PASSO) if(!ancoras.includes(i)) fila.push(i);
   let k=0; const worker=async()=>{ while(k<fila.length){ const i=fila[k++]; await carrega(i); } };
-  await Promise.all([worker(),worker(),worker(),worker(),worker(),worker()]);
+  await Promise.all(LEVE?[worker(),worker(),worker()]:[worker(),worker(),worker(),worker(),worker(),worker()]);
 })();
 let quadroAtual=0, quadroDesenhado=-1, needDraw=true;
 function proximoPronto(i){ if(pronto[i]) return i; for(let d=1;d<N_QUADROS;d++){ if(i-d>=0&&pronto[i-d]) return i-d; if(i+d<N_QUADROS&&pronto[i+d]) return i+d; } return -1; }
 function drawBook(){
   const r=cv.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,2);
-  const W=Math.min(1400,Math.round(r.width*dpr)), Hh=Math.round(W*1030/1552);
+  const W=Math.min(LEVE?960:1400,Math.round(r.width*dpr)), Hh=Math.round(W*1030/1552);
   if(cv.width!==W){cv.width=W;cv.height=Hh;quadroDesenhado=-1;}
   const q=proximoPronto(quadroAtual); if(q<0||q===quadroDesenhado) return;
   ctx.clearRect(0,0,cv.width,cv.height); ctx.drawImage(quadros[q],0,0,cv.width,cv.height); quadroDesenhado=q;
@@ -668,7 +672,7 @@ H.livro=(p,s)=>{
   let near=0,nd=9; CAPITULOS.forEach((c,i)=>{const d=Math.abs(p-c.p); if(d<nd){nd=d;near=i}});
   aplicaCap(near);
   if(!vPlaying){ quadroAtual=tToF(pToT(p)); needDraw=true; }
-  const pr=Math.round(nProntos/N_QUADROS*100); const ht=$('#capaHintTxt'); if(ht) ht.textContent= pr<100 ? `Carregando o livro… ${pr}%` : 'Role para abrir o livro';
+  const pr=Math.min(100,Math.round(nProntos/N_CARREGAR*100)); const ht=$('#capaHintTxt'); if(ht) ht.textContent= pr<100 ? `Carregando o livro… ${pr}%` : 'Role para abrir o livro';
   // textos: aparecem perto da âncora
   heroes.forEach((h,i)=>{
     const c=CAPITULOS[i]; const d=(p-c.p)/.05; // negativo = antes, positivo = depois
@@ -734,7 +738,7 @@ function animaFundo(now){
   bols.forEach((b,k)=>{const d=+b.dataset.d; b.style.transform=`translate(${-smx*60*d+Math.sin(tt*.5+k)*8}px,${-smy*60*d+Math.cos(tt*.4+k*1.7)*10-pu*40*d}px)`});
   $('#livroTilt').style.transform=`rotateY(${smx*4}deg) rotateX(${-smy*3}deg)`;
   if(needDraw||vPlaying){drawBook();needDraw=false}
-  if(nProntos<N_QUADROS && livroSec._on){ const pr=Math.round(nProntos/N_QUADROS*100); const ht=$('#capaHintTxt'); if(ht&&scrollY<livroSec._top+20) ht.textContent=`Carregando o livro… ${pr}%`; }
+  if(nProntos<N_CARREGAR && livroSec._on){ const pr=Math.round(nProntos/N_CARREGAR*100); const ht=$('#capaHintTxt'); if(ht&&scrollY<livroSec._top+20) ht.textContent=`Carregando o livro… ${pr}%`; }
 }
 // navegação especial: entre capítulos o vídeo toca naturalmente e a rolagem acompanha
 function playSegment(fromIdx,toIdx,done){
